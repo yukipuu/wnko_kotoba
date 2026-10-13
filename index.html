@@ -227,11 +227,26 @@ document.getElementById("saveText").addEventListener("click",async()=>{
       ctx.font = "bold 27px sans-serif";
       ctx.fillText(lines[0], 85, y + 5);
       ctx.font = "22px sans-serif";
-      ctx.fillText(lines[1].slice(0, 42), 85, y + 48);
-      if (lines[1].length > 42) {
-        ctx.fillText(lines[1].slice(42, 84), 85, y + 78);
-      }
-      y += 135;
+
+let descLine = "";
+let descY = y + 48;
+
+for (const char of lines[1]) {
+  const testLine = descLine + char;
+
+  if (ctx.measureText(testLine).width > 680 && descLine) {
+    ctx.fillText(descLine, 85, descY);
+    descLine = char;
+    descY += 30;
+  } else {
+    descLine = testLine;
+  }
+}
+
+if (descLine) {
+  ctx.fillText(descLine, 85, descY);
+}
+y += 135;
     }
 
     ctx.fillStyle = "#795744";

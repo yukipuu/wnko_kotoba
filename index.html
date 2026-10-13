@@ -282,16 +282,7 @@ for (const paragraph of paragraphs) {
     return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
   }
 
-  save.addEventListener("click", async () => {
-    const blob = await makeImage();
-    if (!blob) return alert("画像を作れなかったよ。もう一度試してね。");
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "音ことば診断カード.png";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-  });
+  
 
   share.addEventListener("click", async () => {
     const blob = await makeImage();
@@ -301,16 +292,42 @@ for (const paragraph of paragraphs) {
     });
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "うちの子 音ことば診断" });
-      } else {
-        alert("先に画像保存して、写真アプリからシェアしてね♡");
-      }
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        alert("画像保存ボタンから保存してね♡");
-      }
+        
+save.addEventListener("click", async () => {
+  const blob = await makeImage();
+
+  if (!blob) {
+    alert("画像を作れなかったよ。もう一度試してね♡");
+    return;
+  }
+
+  const file = new File(
+    [blob],
+    "音ことば診断カード.png",
+    { type: "image/png" }
+  );
+
+  try {
+    if (
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: "音ことば診断カード"
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      alert("画像を開いたら長押しして保存してね♡");
     }
-  });
+  } catch (e) {
+    if (e.name !== "AbortError") {
+      alert("保存できなかったよ。もう一度試してね♡");
+    }
+  }
+});
+ 
 })();
 </script>
 </body>

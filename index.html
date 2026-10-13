@@ -283,7 +283,24 @@ for (const paragraph of paragraphs) {
   }
 }
 
+   
+  const mascot = new Image();
+  
+  await new Promise(resolve => {
+    mascot.onload = resolve;
+    mascot.onerror = resolve;
+    mascot.src = "yukipu.png";  });
+  if (mascot.complete && mascot.naturalWidth) {
+    ctx.drawImage(
+      mascot,
+      canvas.width - 155,
+      canvas.height - 175,
+      110,
+      143
+    );
+  }
     return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    
   }
 
   

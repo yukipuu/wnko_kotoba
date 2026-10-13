@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff5ef">
+<title>うちの子 音ことば診断</title>
+<style>
+:root{--ink:#55463f;--pink:#f7dcd7;--mint:#e5eedb;--blue:#dcecf8;--cream:#fffaf5;--accent:#b97861}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#fff5ef,#f7fbff);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:var(--ink)}
+main{max-width:720px;margin:auto;padding:18px 15px 42px}
+.hero{text-align:center;padding:25px 17px 20px;border-radius:28px;background:#fff;border:2px solid #f0dfd5;box-shadow:0 8px 24px #6c4b3510}
+.eyebrow{font-size:.85rem;letter-spacing:.08em;color:var(--accent);font-weight:800}
+h1{font-size:clamp(1.65rem,6vw,2.5rem);line-height:1.25;margin:9px 0;color:#795744}
+.lead{margin:0 auto;line-height:1.8;max-width:34em}
+.paws{font-size:1.8rem;margin:10px}
+.panel{background:#fff;border:1px solid #eee1da;border-radius:22px;padding:18px;margin-top:16px;box-shadow:0 5px 18px #6c4b3508}
+label{display:block;font-weight:750;margin:12px 0 7px}
+input,select{width:100%;font:inherit;padding:14px;border-radius:13px;border:1px solid #d8c9c0;background:#fff;color:var(--ink)}
+button{border:0;border-radius:15px;background:#bd806a;color:white;font:inherit;font-weight:800;padding:14px 18px;cursor:pointer}
+button:active{transform:scale(.99)}
+.primary{width:100%;margin-top:17px;font-size:1.05rem}
+.small{font-size:.83rem;color:#88786f;line-height:1.7}
+.result{display:none}
+.result h2{text-align:center;color:#805744;font-size:1.8rem;margin:5px 0}
+.pill{display:inline-block;border-radius:999px;background:#fff0eb;color:#a5644f;padding:5px 10px;font-size:.8rem;font-weight:800}
+.sound{display:flex;gap:12px;align-items:flex-start;border-radius:16px;padding:12px;margin:10px 0;background:#fff8f4}
+.kana{min-width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:var(--pink);font-size:1.6rem;font-weight:900;color:#895943}
+.sound:nth-of-type(2n) .kana{background:var(--mint);color:#5f7b51}
+.sound p{margin:4px 0 0;line-height:1.65}
+.message{background:#fff5ef;border:1px dashed #d6aa98;border-radius:17px;padding:16px;line-height:1.9}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.actions button{flex:1;min-width:130px}
+.secondary{background:#e9f2f8;color:#47677c}
+footer{text-align:center;padding:20px 8px;color:#9a877c;font-size:.8rem;line-height:1.7}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="eyebrow">YUKIPU & UMENYAN PRESENTS</div>
+    <div class="paws">🐾 🐶 🐱 🐾</div>
+    <h1>うちの子<br>音ことば診断</h1>
+    <p class="lead">お名前の音をひとつずつ見ながら、<br>その子らしい魅力を見つけてみよう♡</p>
+  </section>
+
+  <section class="panel">
+    <span class="pill">診断してみよう</span>
+    <label for="petName">うちの子のお名前</label>
+    <input id="petName" maxlength="20" value="あずき" placeholder="例：あずき">
+    <label for="petType">どんな子？</label>
+    <select id="petType">
+      <option>わんこ</option><option>ねこちゃん</option><option>うさぎさん</option><option>鳥さん</option><option>その他のペット</option>
+    </select>
+    <button class="primary" id="diagnose">音ことばを見てみる ♡</button>
+    <p class="small">※この試作品では、音の意味は診断ルールを整えるための仮の表現です。性格を決めつけるものではなく、楽しむためのヒントとして使います。</p>
+  </section>
+
+  <section class="panel result" id="result" aria-live="polite">
+    <div style="text-align:center"><span class="pill">音ことば診断カード No.001</span><div style="font-size:2rem;margin-top:10px">🐾 💗 🐾</div></div>
+    <h2 id="resultName">あずきちゃん・くん</h2>
+    <p id="resultIntro" style="text-align:center;line-height:1.7"></p>
+    <h3>🎵 音をひとつずつ見てみよう</h3>
+    <div id="soundList"></div>
+    <h3>💌 名前全体からのメッセージ</h3>
+    <div class="message" id="wholeMessage"></div>
+    <div class="actions">
+      <button id="saveText" class="secondary">診断文をコピー</button>
+      <button id="again">別のお名前で診断</button>
+    </div>
+    <p class="small">音のイメージを楽しむための試作版です。音ごとの意味は、今後ゆきこと一緒に整理していきます。</p>
+  </section>
+  <footer>ゆきぷー＆うめにゃんの 音ことばノート<br>名前にかくれた魅力を見つけよう♡</footer>
+</main>
+<script>
+const meanings = {
+  "あ":["前向き・のびのび","好奇心や新しいことへ向かう気持ちを感じさせる音。"],
+  "い":["集中・まっすぐ","好きなことに気持ちを向けるイメージ。"],
+  "う":["やわらかさ・協調性","周りと心地よく過ごすイメージ。"],
+  "え":["親しみ・調和","人や仲間とのつながりを感じさせる音。"],
+  "お":["意志・頼もしさ","自分のペースや大切なものを守るイメージ。"],
+  "か":["行動力・適応力","気になることに一歩踏み出すイメージ。"],
+  "き":["いきいき・前進","好きなことにまっすぐ向かうイメージ。"],
+  "く":["粘り強さ・自分らしさ","自分のペースで続けるイメージ。"],
+  "け":["慎重・丁寧","様子を見ながら進むイメージ。"],
+  "こ":["落ち着き・マイペース","自分らしいリズムを大切にするイメージ。"],
+  "さ":["明るさ・活動的","周りをぱっと明るくするイメージ。"],
+  "し":["穏やか・思いやり","やさしく寄り添うイメージ。"],
+  "す":["やさしさ・すなお","親しみやすく、柔らかなイメージ。"],
+  "せ":["誠実・きちんと","自分なりのこだわりを大切にするイメージ。"],
+  "そ":["おだやか・自然体","無理をせず自分らしくいるイメージ。"],
+  "た":["元気・行動的","思い立ったら動いてみるイメージ。"],
+  "ち":["知性・工夫","周りをよく見て工夫するイメージ。"],
+  "つ":["意志・好奇心","気になるものを追いかけるイメージ。"],
+  "て":["あたたかさ・親しみ","近くにいる人をほっとさせるイメージ。"],
+  "と":["包容力・ぬくもり","仲間や家族を大切にするイメージ。"],
+  "な":["知的・活発","周りに興味を持ち、よく気づくイメージ。"],
+  "に":["忍耐・やさしさ","ゆっくり関係を育てるイメージ。"],
+  "ぬ":["落ち着き・粘り強さ","じっくり向き合うイメージ。"],
+  "ね":["親しみ・安心感","そばにいると安心できるイメージ。"],
+  "の":["温厚・おおらか","ゆったりした空気を感じさせる音。"],
+  "は":["社交性・軽やかさ","人や仲間とのやりとりを楽しむイメージ。"],
+  "ひ":["感性・繊細さ","小さな変化に気づくイメージ。"],
+  "ふ":["柔軟・ふんわり","状況に合わせてしなやかに過ごすイメージ。"],
+  "へ":["継続・粘り強さ","少しずつ積み重ねるイメージ。"],
+  "ほ":["協調・あたたかさ","仲間と安心して過ごすイメージ。"],
+  "ま":["包容力・支える力","周りを大切にするイメージ。"],
+  "み":["感性・美しさ","好きなものを感じ取るイメージ。"],
+  "む":["穏やか・安定感","安心できる場所で力を発揮するイメージ。"],
+  "め":["直感・行動力","ひらめきを行動につなげるイメージ。"],
+  "も":["社交性・つながり","人との縁を大切にするイメージ。"],
+  "や":["活発・のびやか","自分の気持ちを素直に表すイメージ。"],
+  "ゆ":["柔軟・やさしさ","周りに合わせながら自分らしさも持つイメージ。"],
+  "よ":["おおらか・包容力","相手を受け止めるイメージ。"],
+  "ら":["勇気・活発","新しいことにも向かっていくイメージ。"],
+  "り":["行動力・意志","好きなことに集中するイメージ。"],
+  "る":["協調・おだやか","周りと心地よく過ごすイメージ。"],
+  "れ":["知性・見通す力","よく観察して考えるイメージ。"],
+  "ろ":["論理性・落ち着き","状況を見て判断するイメージ。"],
+  "わ":["つながり・リーダーシップ","仲間を気にかけるイメージ。"],
+  "ん":["余韻・まとまり","名前の響きを結び、印象を整える音。"]
+};
+const voiced = {"が":"か","ぎ":"き","ぐ":"く","げ":"け","ご":"こ","ざ":"さ","じ":"し","ず":"す","ぜ":"せ","ぞ":"そ","だ":"た","ぢ":"ち","づ":"つ","で":"て","ど":"と","ば":"は","び":"ひ","ぶ":"ふ","べ":"へ","ぼ":"ほ","ぱ":"は","ぴ":"ひ","ぷ":"ふ","ぺ":"へ","ぽ":"ほ"};
+const smallKana = new Set(["ゃ","ゅ","ょ","ぁ","ぃ","ぅ","ぇ","ぉ","っ","ゎ"]);
+function normalize(s){return s.trim().replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));}
+function getMeaning(ch){
+  const base=voiced[ch]||ch;
+  if(meanings[base]) {
+    const m=meanings[base];
+    if(voiced[ch]) return [m[0]+"（濁音・半濁音の響き）",m[1]+" 濁音・半濁音としての響きは、今後ルールを整える予定です。"];
+    return m;
+  }
+  if(smallKana.has(ch)) return ["響きをつなぐ音","前後の音と合わせて、名前全体の響きを楽しむための音。"];
+  return ["その子だけの響き","この音の説明は、これから少しずつ追加していくよ。"];
+}
+function run(){
+ const raw=document.getElementById("petName").value.trim();
+ const type=document.getElementById("petType").value;
+ if(!raw){alert("お名前を入力してね♡");return;}
+ const name=normalize(raw);
+ const chars=Array.from(name);
+ const list=document.getElementById("soundList"); list.innerHTML="";
+ chars.forEach((ch,i)=>{
+  const [title,desc]=getMeaning(ch);
+  const row=document.createElement("div"); row.className="sound";
+  const kana=document.createElement("div"); kana.className="kana"; kana.textContent=ch;
+  const body=document.createElement("div");
+  const strong=document.createElement("strong"); strong.textContent=title;
+  const p=document.createElement("p"); p.textContent=desc;
+  body.append(strong,p);row.append(kana,body);list.append(row);
+ });
+ const petSuffix=type==="わんこ"?"くん・ちゃん":type==="ねこちゃん"?"ちゃん・くん":"さん";
+ document.getElementById("resultName").textContent=name+petSuffix;
+ document.getElementById("resultIntro").textContent=type+"のお名前「"+name+"」の音を見てみよう。";
+ const tags=chars.map(ch=>getMeaning(ch)[0].split("（")[0]).filter((v,i,a)=>a.indexOf(v)===i);
+ document.getElementById("wholeMessage").textContent="「"+name+"」という名前には、"+tags.slice(0,4).join("、")+"といったイメージが見つかったよ。名前の響きは、その子をもっと愛おしく感じるための小さなヒント。いつもの呼びかけに、たくさんの愛情を込めてね♡";
+ document.getElementById("result").style.display="block";
+ document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("diagnose").addEventListener("click",run);
+document.getElementById("again").addEventListener("click",()=>{document.getElementById("petName").focus();window.scrollTo({top:0,behavior:"smooth"});});
+document.getElementById("saveText").addEventListener("click",async()=>{
+ const name=document.getElementById("resultName").textContent;
+ const text=name+"\n"+document.getElementById("resultIntro").textContent+"\n\n"+Array.from(document.querySelectorAll("#soundList .sound")).map(row=>row.innerText).join("\n\n")+"\n\n"+document.getElementById("wholeMessage").textContent;
+ try{await navigator.clipboard.writeText(text);alert("診断文をコピーしたよ♡");}
+ catch(e){prompt("この診断文をコピーしてね",text);}
+});
+</script>
+</body>
+</html>

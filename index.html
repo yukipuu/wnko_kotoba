@@ -166,6 +166,116 @@ document.getElementById("saveText").addEventListener("click",async()=>{
  try{await navigator.clipboard.writeText(text);alert("診断文をコピーしたよ♡");}
  catch(e){prompt("この診断文をコピーしてね",text);}
 });
+  
+(function () {
+  const result = document.getElementById("result");
+  const actions = result.querySelector(".actions");
+
+  const save = document.createElement("button");
+  save.textContent = "🎨 診断カードを画像保存";
+  save.style.background = "#6e8c70";
+  save.style.width = "100%";
+
+  const share = document.createElement("button");
+  share.textContent = "💌 診断カードをシェア";
+  share.style.background = "#bd806a";
+  share.style.width = "100%";
+
+  actions.prepend(share);
+  actions.prepend(save);
+
+  async function makeImage() {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const name = document.getElementById("resultName").textContent;
+    const intro = document.getElementById("resultIntro").textContent;
+    const sounds = [...document.querySelectorAll("#soundList .sound")];
+    const message = document.getElementById("wholeMessage").textContent;
+
+    canvas.width = 900;
+    canvas.height = 650 + sounds.length * 150;
+    ctx.fillStyle = "#fff5ef";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(25, 25, 850, canvas.height - 50);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#b97861";
+    ctx.font = "bold 30px sans-serif";
+    ctx.fillText("YUKIPU & UMENYAN", 450, 85);
+    ctx.fillStyle = "#795744";
+    ctx.font = "bold 44px sans-serif";
+    ctx.fillText("うちの子 音ことば診断", 450, 150);
+    ctx.font = "bold 46px sans-serif";
+    ctx.fillText(name, 450, 225);
+
+    ctx.fillStyle = "#55463f";
+    ctx.font = "25px sans-serif";
+    ctx.fillText(intro, 450, 280);
+
+    let y = 350;
+    ctx.textAlign = "left";
+    for (const row of sounds) {
+      const lines = [
+        row.querySelector(".kana").textContent + "  " +
+        row.querySelector("strong").textContent,
+        row.querySelector("p").textContent
+      ];
+      ctx.fillStyle = "#f7dcd7";
+      ctx.fillRect(65, y - 30, 770, 115);
+      ctx.fillStyle = "#55463f";
+      ctx.font = "bold 27px sans-serif";
+      ctx.fillText(lines[0], 85, y + 5);
+      ctx.font = "22px sans-serif";
+      ctx.fillText(lines[1].slice(0, 42), 85, y + 48);
+      if (lines[1].length > 42) {
+        ctx.fillText(lines[1].slice(42, 84), 85, y + 78);
+      }
+      y += 135;
+    }
+
+    ctx.fillStyle = "#795744";
+    ctx.font = "bold 28px sans-serif";
+    ctx.fillText("💌 名前全体からのメッセージ", 65, y + 5);
+    ctx.font = "23px sans-serif";
+    for (let i = 0; i < message.length; i += 32) {
+      y += 36;
+      ctx.fillText(message.slice(i, i + 32), 65, y);
+    }
+
+    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+  }
+
+  save.addEventListener("click", async () => {
+    const blob = await makeImage();
+    if (!blob) return alert("画像を作れなかったよ。もう一度試してね。");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "音ことば診断カード.png";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  });
+
+  share.addEventListener("click", async () => {
+    const blob = await makeImage();
+    if (!blob) return alert("画像を作れなかったよ。");
+    const file = new File([blob], "音ことば診断カード.png", {
+      type: "image/png"
+    });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "うちの子 音ことば診断" });
+      } else {
+        alert("先に画像保存して、写真アプリからシェアしてね♡");
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        alert("画像保存ボタンから保存してね♡");
+      }
+    }
+  });
+})();
 </script>
 </body>
 </html>

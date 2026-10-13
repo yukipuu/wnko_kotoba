@@ -238,10 +238,31 @@ document.getElementById("saveText").addEventListener("click",async()=>{
     ctx.font = "bold 28px sans-serif";
     ctx.fillText("💌 名前全体からのメッセージ", 65, y + 5);
     ctx.font = "23px sans-serif";
-    for (let i = 0; i < message.length; i += 32) {
-      y += 36;
-      ctx.fillText(message.slice(i, i + 32), 65, y);
+    
+const maxWidth = 770;
+const lineHeight = 36;
+const paragraphs = message.split("\n");
+
+for (const paragraph of paragraphs) {
+  let line = "";
+
+  for (const char of paragraph) {
+    const testLine = line + char;
+
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      y += lineHeight;
+      ctx.fillText(line, 65, y);
+      line = char;
+    } else {
+      line = testLine;
     }
+  }
+
+  if (line) {
+    y += lineHeight;
+    ctx.fillText(line, 65, y);
+  }
+}
 
     return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
   }
